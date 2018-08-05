@@ -38,30 +38,32 @@ def new_listings(results_old, results):
 	
 	
 def send_mail(listings):
-
-	msg = MIMEMultipart()
-	msg['From'] = email_from
-	msg['To'] = email_to
-	msg['Subject'] = "Preloved Listings ({}) - {}".format(len(listings), datetime.datetime.now().strftime("%d/%m/%Y %H:%M"))
-	#message = 'New preloved listings for URL: ' + searchURL + "&rand=" + str(random.randint(0,1000000)) + "\n\n"
-	message = 'New preloved listings for URL: ' + searchURL + "\n\n"
-	for listing in listings:
-		message = message + "{} - {} - {}\n".format(listing["title"], listing["location"], listing["price"])
-		message = message + listing["url"] + "\n\n"
-	message = message + ''
-	message = message + '[{}] End of message'.format(datetime.datetime.now().strftime("%d/%m/%Y %H:%M"))
-	msg.attach(MIMEText(message.encode('utf-8'), 'plain', 'UTF-8'))
-	mailserver = smtplib.SMTP(email_server,587)
-	# identify ourselves to smtp gmail client
-	mailserver.ehlo()
-	# secure our email with tls encryption
-	mailserver.starttls()
-	# re-identify ourselves as an encrypted connection
-	mailserver.ehlo()
-	mailserver.login(str(email_username), str(email_password))
-	mailserver.sendmail(email_from, email_to, msg.as_string())
-	print("** Mail sent!")
-	mailserver.quit()
+	
+	for email_to_one in email_to:
+		print("Sending listings to {}".format(email_to_one))
+		msg = MIMEMultipart()
+		msg['From'] = email_from
+		msg['To'] = email_to_one
+		msg['Subject'] = "Preloved Listings ({}) - {}".format(len(listings), datetime.datetime.now().strftime("%d/%m/%Y %H:%M"))
+		#message = 'New preloved listings for URL: ' + searchURL + "&rand=" + str(random.randint(0,1000000)) + "\n\n"
+		message = 'New preloved listings for URL: ' + searchURL + "\n\n"
+		for listing in listings:
+			message = message + "{} - {} - {}\n".format(listing["title"], listing["location"], listing["price"])
+			message = message + listing["url"] + "\n\n"
+		message = message + ''
+		message = message + '[{}] End of message'.format(datetime.datetime.now().strftime("%d/%m/%Y %H:%M"))
+		msg.attach(MIMEText(message.encode('utf-8'), 'plain', 'UTF-8'))
+		mailserver = smtplib.SMTP(email_server,587)
+		# identify ourselves to smtp gmail client
+		mailserver.ehlo()
+		# secure our email with tls encryption
+		mailserver.starttls()
+		# re-identify ourselves as an encrypted connection
+		mailserver.ehlo()
+		mailserver.login(str(email_username), str(email_password))
+		mailserver.sendmail(email_from, email_to_one, msg.as_string())
+		print("** Mail sent!")
+		mailserver.quit()
 	
 if __name__ == '__main__':
 	try:
@@ -69,7 +71,7 @@ if __name__ == '__main__':
 		email_password = sys.argv[2]
 		email_server = sys.argv[3]
 		email_from = sys.argv[4]
-		email_to = sys.argv[5]
+		email_to = sys.argv[5].split(",") #Support multiple emails separated by comma
 		searchURL = sys.argv[6]
 	except IndexError:
 		exit("Missing arguments")
@@ -90,7 +92,7 @@ if __name__ == '__main__':
 			# If page broken, use old listings
 			if not listings:
 				listings = listings_old
-			
+
 			# Compare listings with cache, check for new results, send mail
 			listings_new = new_listings(listings_old, listings)
 			if listings_new:
