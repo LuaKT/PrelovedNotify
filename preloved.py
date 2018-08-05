@@ -90,7 +90,7 @@ if __name__ == '__main__':
 			# If page broken, use old listings
 			if not listings:
 				listings = listings_old
-			send_mail(listings)
+			
 			# Compare listings with cache, check for new results, send mail
 			listings_new = new_listings(listings_old, listings)
 			if listings_new:
